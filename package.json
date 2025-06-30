@@ -1,0 +1,41 @@
+{
+  "name": "gemini-assistant",
+  "displayName": "Gemini Assistant",
+  "description": "Inline code assistant for VSCode using Google Gemini API",
+  "version": "1.0.0",
+  "publisher": "neabytelab",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onCommand:geminiAssistant.scanAndExecuteCommand"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "geminiAssistant.scanAndExecuteCommand",
+        "title": "Gemini Assistant: Execute Custom Command"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Gemini Assistant",
+      "properties": {
+        "geminiAssistant.geminiApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Google Gemini API Key"
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.2.2",
+    "node-fetch": "^3.3.2"
+  }
+}
