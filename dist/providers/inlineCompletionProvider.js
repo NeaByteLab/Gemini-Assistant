@@ -34,34 +34,49 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.activateInlineCompletionProvider = activateInlineCompletionProvider;
-/**
- * Register Inline Completion Provider
- * Params: ExtensionContext
- */
 const vscode = __importStar(require("vscode"));
 const geminiClient_1 = require("../api/geminiClient");
 const logger_1 = require("../logger");
+/**
+ * Delay Variable
+ */
+let lastFetchTime = 0;
+let lastPromise = null;
+/**
+ * Throttled Fetch Gemini Suggestion
+ * Params: PromptText, ApiKey
+ */
+async function throttledFetch(promptText, apiKey) {
+    const now = Date.now();
+    if (lastPromise && now - lastFetchTime < 1500) {
+        (0, logger_1.logInfo)('Using cached Gemini suggestion');
+        return lastPromise;
+    }
+    lastFetchTime = now;
+    lastPromise = (0, geminiClient_1.fetchGeminiSuggestion)(promptText, apiKey);
+    return lastPromise;
+}
+/**
+ * Activate Inline Completion Provider
+ * Params: ExtensionContext
+ */
 function activateInlineCompletionProvider(extensionContext) {
-    (0, logger_1.logInfo)('Activate inline completion provider');
     let inlineProvider = {
-        provideInlineCompletionItems: async function (document, position, context, cancelToken) {
+        provideInlineCompletionItems: async function (document, position, _context, _cancelToken) {
             (0, logger_1.logInfo)('Inline completion requested');
-            let codeBlockContext = document.getText(new vscode.Range(new vscode.Position(Math.max(0, position.line - 10), 0), position));
-            let extensionConfig = vscode.workspace.getConfiguration('geminiAssistant');
-            let geminiApiKey = extensionConfig.get('geminiApiKey');
-            (0, logger_1.logInfo)('Request suggestion to Gemini API');
-            let aiSuggestion = await (0, geminiClient_1.fetchGeminiSuggestion)(codeBlockContext, geminiApiKey || '');
+            const startLine = Math.max(0, position.line - 10);
+            const codeBlockContext = document.getText(new vscode.Range(new vscode.Position(startLine, 0), position));
+            const extensionConfig = vscode.workspace.getConfiguration('geminiAssistant');
+            const geminiApiKey = extensionConfig.get('geminiApiKey') || '';
+            const aiSuggestion = await throttledFetch(codeBlockContext, geminiApiKey);
             if (!(aiSuggestion)) {
                 (0, logger_1.logInfo)('No suggestion received');
-                return [];
+                return null;
             }
-            else {
-                (0, logger_1.logInfo)('Suggestion received');
-                (0, logger_1.logInfo)('AI suggestion content: ' + aiSuggestion);
-                return [
-                    new vscode.InlineCompletionItem(aiSuggestion, new vscode.Range(position, position))
-                ];
-            }
+            (0, logger_1.logInfo)('Suggestion received');
+            (0, logger_1.logInfo)('AI suggestion content: ' + aiSuggestion);
+            const item = new vscode.InlineCompletionItem(aiSuggestion, new vscode.Range(position, position));
+            return [item];
         }
     };
     extensionContext.subscriptions.push(vscode.languages.registerInlineCompletionItemProvider({ pattern: '**' }, inlineProvider));

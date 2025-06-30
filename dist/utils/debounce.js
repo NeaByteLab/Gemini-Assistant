@@ -5,16 +5,15 @@ exports.debounceFunction = debounceFunction;
  * Debounce Function Utility
  * Params: Callback, WaitTime
  */
-const logger_1 = require("../logger");
 function debounceFunction(callback, waitTime) {
-    let timeoutHandler;
+    let timeoutHandler = null;
     return function (...contextArgs) {
-        (0, logger_1.logInfo)('Debounce function called');
-        if (timeoutHandler) {
+        if (timeoutHandler !== null) {
             clearTimeout(timeoutHandler);
         }
         timeoutHandler = setTimeout(function () {
             callback.apply(null, contextArgs);
+            timeoutHandler = null;
         }, waitTime);
     };
 }

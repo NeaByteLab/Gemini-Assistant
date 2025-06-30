@@ -34,17 +34,21 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getGeminiApiKey = getGeminiApiKey;
+exports.saveGeminiApiKey = saveGeminiApiKey;
 const vscode = __importStar(require("vscode"));
 /**
- * Configuration Manager Utility
+ * Configuration Manager For Gemini API Key Persistence
  */
+const configSection = 'geminiAssistant';
 function getGeminiApiKey() {
-    let extensionConfig = vscode.workspace.getConfiguration('geminiAssistant');
-    let geminiApiKey = extensionConfig.get('geminiApiKey');
-    if (!(geminiApiKey)) {
+    const config = vscode.workspace.getConfiguration(configSection);
+    const apiKey = config.get('geminiApiKey');
+    if (!(apiKey)) {
         return '';
     }
-    else {
-        return geminiApiKey;
-    }
+    return apiKey;
+}
+async function saveGeminiApiKey(apiKey) {
+    const config = vscode.workspace.getConfiguration(configSection);
+    await config.update('geminiApiKey', apiKey, vscode.ConfigurationTarget.Global);
 }

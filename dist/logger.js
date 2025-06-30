@@ -34,11 +34,11 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.logInfo = logInfo;
+const vscode = __importStar(require("vscode"));
 /**
  * Logger Utility Output Channel
  * Params: LogMessage
  */
-const vscode = __importStar(require("vscode"));
 const outputChannel = vscode.window.createOutputChannel('Gemini Assistant');
 function logInfo(logMessage) {
     outputChannel.appendLine('[Gemini Assistant] ' + logMessage);
