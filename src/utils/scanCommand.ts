@@ -13,7 +13,6 @@ export async function scanAndExecuteGeminiCommand() {
   }
   let document = activeEditor.document
   let totalLines = document.lineCount
-
   for (let lineIndex = 0; lineIndex < totalLines; lineIndex++) {
     let textLine = document.lineAt(lineIndex).text
     if (textLine.trim().startsWith('// gemini-ask:')) {

@@ -1,14 +1,25 @@
-/**
- * Extension Entry Point
- * Params: ExtensionContext
- */
-import { ExtensionContext } from 'vscode'
+import * as vscode from 'vscode'
+import { debounceFunction } from './utils/debounce'
 import { activateInlineCompletionProvider } from './providers/inlineCompletionProvider'
+import { registerCommands } from './commands'
 import { logInfo } from './logger'
 
-export function activate(extensionContext: ExtensionContext) {
+/**
+ * Activate Extension With Debounced Inline Suggest Trigger
+ * Params: ExtensionContext
+ */
+export function activate(extensionContext: vscode.ExtensionContext) {
+  logInfo('Extension activated')
+  registerCommands(extensionContext)
   activateInlineCompletionProvider(extensionContext)
-  logInfo('Gemini Assistant extension activated')
+  const debouncedTriggerSuggest = debounceFunction(() => {
+    vscode.commands.executeCommand('editor.action.inlineSuggest.trigger')
+  }, 1500)
+  vscode.workspace.onDidChangeTextDocument(() => {
+    debouncedTriggerSuggest()
+  }, null, extensionContext.subscriptions)
 }
 
-export function deactivate() { }
+export function deactivate() {
+  logInfo('Extension deactivated')
+}
